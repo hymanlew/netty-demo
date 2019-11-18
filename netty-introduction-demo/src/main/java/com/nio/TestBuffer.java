@@ -1,6 +1,5 @@
 package com.nio;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**

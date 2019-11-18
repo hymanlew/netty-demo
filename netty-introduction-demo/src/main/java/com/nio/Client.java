@@ -53,7 +53,7 @@ public class Client {
                 //do {
                 //    input = reader.readLine();
                 //    builder.append(input);
-                //}while (reader.read() > 0);
+                //}while (reader.ready());
 
                 //while ((input = reader.readLine()) != null){
                 //    builder.append(input);
