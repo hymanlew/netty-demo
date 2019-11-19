@@ -133,6 +133,9 @@ public class ServerNIO {
                 // 取消选择键 SelectionKey，否则会一定被循环使用。
                 it.remove();
             }
+
+            // 如果不是循环监听事件的话（for），就需要及时关闭连接
+            ssChannel.close();
         }
     }
 
