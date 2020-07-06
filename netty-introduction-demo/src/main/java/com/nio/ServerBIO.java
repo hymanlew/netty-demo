@@ -24,6 +24,8 @@ public class ServerBIO {
          */
         for (int i=1; i<4; i++){
             try {
+                System.out.println("阻塞 - 等待客户端连接 .....");
+
                 client = server.accept();
                 System.out.println(client.getRemoteSocketAddress() + "connect!");
                 new Thread(new HandleMsg(client)).start();

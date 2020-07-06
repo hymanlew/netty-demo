@@ -20,6 +20,11 @@ public class HandleMsg implements Runnable{
         PrintWriter writer = null;
 
         try{
+            /**
+             * 验证 BIO 是否是一个连接就开启一个新线程
+             */
+            System.out.println("线程信息 == " + Thread.currentThread().getId());
+
             reader = new BufferedReader(new InputStreamReader(client.getInputStream()));
             writer = new PrintWriter(client.getOutputStream());
 
@@ -29,11 +34,13 @@ public class HandleMsg implements Runnable{
                 writer.println(input);
 
                 /**
-                 * 必须放在 while 循环内，因为客户端的 BufferedReader.readLine() 会一直阻塞等待服务器的输出。
+                 * flush() 必须放在 while 循环内，因为客户端的 BufferedReader.readLine() 会一直阻塞等待服务器的输出。
                  * 而客户端的 BufferedReader 阻塞之后，又因为它又没关闭连接，所以也造成本 while 的 readLine() 造成阻塞。
                  * 形成死锁。
                  */
                 writer.flush();
+
+                System.out.println("阻塞 - 等待客户端发送数据 .....");
             }
             System.out.println("输入结束 ==");
 

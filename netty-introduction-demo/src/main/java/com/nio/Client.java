@@ -10,6 +10,7 @@ import java.net.Socket;
 public class Client {
 
     public static class ClientR implements Runnable {
+
         @Override
         public void run() {
             Socket client = null;
