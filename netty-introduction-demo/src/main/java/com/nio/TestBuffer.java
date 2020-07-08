@@ -1,6 +1,9 @@
 package com.nio;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * 缓冲区（buffer）：
@@ -23,11 +26,10 @@ import java.nio.ByteBuffer;
  * get()：获取缓冲区中的数据。
  *
  * 缓冲区中的四个核心属性（基本属性）：
- * 容量 (capacity) ：  表示 Buffer 最大数据容量，缓冲区容量不能为负，并且创建后不能更改（其底层就是数组数据结构）。
- * 限制 (limit)：      表示缓冲区中可以操作数据的大小。即大于 limit 后的数据不可读写。缓冲区的限制不能为负，并且不能大于其容量。
- * 位置 (position)：   表示缓冲区中正在操作数据的位置，即下一个要读取或写入的数据的索引。缓冲区的位置不能为负，并且不能大于其限制。
- * 标记 (mark)与重置 (reset)：标记是一个索引，表示记录当前 position 的位置（mark方法）。可以通过 reset 方法恢复到 mark 的位置。
- *
+ * 容量 (capacity)：表示 Buffer 最大数据容量，缓冲区容量不能为负，并且创建后不能更改（其底层就是数组数据结构）。
+ * 限制 (limit)：   表示缓冲区中可以操作数据的大小。即大于 limit 后的数据不可读写。缓冲区的限制不能为负，并且不能大于其容量。这个大小限制是可以修改的。
+ * 位置 (position)：表示缓冲区中正在操作数据的位置，即下一个要读取或写入的数据的索引。每次读写缓冲区数据时都会改变这个值，为下次读写作准备。缓冲区的位置不能为负，并且不能大于其限制。
+ * 标记 (mark) 与重置 (reset)：标记是一个索引，表示记录当前 position 的位置（mark方法）。可以通过 reset 方法恢复到 mark 的位置。
  * 标记、位置、限制、容量遵守以下不变式： 0 <= mark <= position <= limit <= capacity
  *
  *
@@ -135,16 +137,51 @@ public class TestBuffer {
 
         // 判断缓冲区中是否还有剩余数据
         if(buffer.hasRemaining()){
-            // 获取缓冲区中可以操作的数据的数量
+            // 获取缓冲区中可以操作的数据的数量，remaining( ) 返回当前位置与限制之间的元素个数
             System.out.println(buffer.remaining());
         }
     }
 
     public void test3(){
-        // 建立直接缓冲区，没有使用内存映射文件
+
+        // 设置缓冲区的初始容量
+        ByteBuffer.allocate(1024);
+
+        // 指定容量，建立直接缓冲区，没有使用内存映射文件
         ByteBuffer buffer = ByteBuffer.allocateDirect(1024);
+
+        // 告知此缓冲区是否为直接缓冲区
         System.out.println(buffer.isDirect());
 
+        // 把一个数组放到缓冲区中使用
+        ByteBuffer.wrap(new byte[]{});
+
+        // 构造初始化位置 offset 和上界 length 的缓冲区
+        ByteBuffer.wrap(new byte[]{}, 0, 10);
+
+        // 从当前位置上添加，put 之后，position 会自动 +1
         buffer.put("hyman".getBytes());
+
+        // 从绝对位置上 put，不会造成 position 变动
+        buffer.put(2, "hi".getBytes()[0]);
+
+        // 从当前位置 position 上 get，get 之后，position 会自动 +1
+        buffer.get();
+
+        // 从绝对位置 get
+        buffer.get(2);
+
+        // 告知此缓冲区是否为只读缓冲区
+        System.out.println(buffer.isReadOnly());
+
+        // 告知此缓冲区是否具有可访问的底层实现数组
+        System.out.println(buffer.hasArray());
+
+        // 返回此缓冲区的底层实现数组
+        System.out.println(Arrays.asList(buffer.array()));
+
+        // 返回此缓冲区的底层实现数组中第一个缓冲区元素的偏移量
+        System.out.println(buffer.arrayOffset());
+
     }
 }

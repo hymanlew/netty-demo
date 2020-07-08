@@ -62,6 +62,7 @@ public class TestChannel {
 
     // NIO 字符集
     public void test5() throws Exception{
+
         // 获取 NIO 支持的字符集类型
         Map<String, Charset> map = Charset.availableCharsets();
         Set<Map.Entry<String, Charset>> set = map.entrySet();
@@ -125,7 +126,11 @@ public class TestChannel {
         channel2.write(bufs);
     }
 
-    // 通道之间的数据传输（直接缓冲区）
+    /**
+     * 通道之间的数据传输（直接缓冲区）
+     *
+     * @throws IOException
+     */
     public void test3() throws IOException{
         FileChannel inChannel = FileChannel.open(Paths.get("d:/1.mkv"), StandardOpenOption.READ);
         FileChannel outChannel = FileChannel.open(Paths.get("d:/2.mkv"), StandardOpenOption.WRITE, StandardOpenOption.READ, StandardOpenOption.CREATE);
@@ -141,7 +146,11 @@ public class TestChannel {
         outChannel.close();
     }
 
-    // 使用直接缓冲区完成文件的复制（内存映射文件）
+    /**
+     * 使用直接缓冲区完成文件的复制（内存映射文件）
+     *
+     * @throws IOException
+     */
     public void test2() throws IOException{
         long start = System.currentTimeMillis();
 
@@ -190,16 +199,21 @@ public class TestChannel {
         System.out.println("耗费时间为：" + (end - start));
     }
 
-    // 利用通道完成文件的复制（非直接缓冲区）
+    /**
+     * 利用通道完成文件的复制（非直接缓冲区）
+     */
     public void test1(){
         long start = System.currentTimeMillis();
 
         // 获取通道。发生异常后自动关闭所有的通道及连接
         try( FileInputStream fis = new FileInputStream("d:/1.txt");
              FileOutputStream fos = new FileOutputStream("d:/2.txt");
+
+             // 从 FileIn/OutputStream 获取对应的 FileChannel，并且其真实类型是 FileChannelImpl
              FileChannel inChannel = fis.getChannel();
              FileChannel outChannel = fos.getChannel()
         ) {
+
             // 分配指定大小的缓冲区
             ByteBuffer buf = ByteBuffer.allocate(1024);
 
@@ -208,10 +222,13 @@ public class TestChannel {
 
                 // 切换读取数据的模式
                 buf.flip();
+                System.out.println(new String(buf.array()));
+
                 // 将缓冲区中的数据写入通道中
                 while (buf.hasRemaining()){
                     outChannel.write(buf);
                 }
+
                 // 清空缓冲区
                 buf.clear();
             }
