@@ -37,8 +37,11 @@ public class ServerNIO {
         // 轮询式的获取选择器上已经“准备就绪”的事件
         for(;;) {
 
-            // select() 会一直阻塞，直到有一个事件已经准备好为止。
+            // select() 会一直阻塞，直到有一个事件已经准备好为止。也可以指定等待的时间，毫秒数
             selector.select();
+
+            // 不阻塞，立马返还
+            //selector.selectNow();
 
             // 获取当前选择器中所有注册的“选择键(已就绪的监听事件)”
             Iterator<SelectionKey> it = selector.selectedKeys().iterator();
@@ -84,7 +87,7 @@ public class ServerNIO {
                         if(len == 0){
                             // 更改选择键的监听事件，增加读，写两个事件，使用通道符 | 连接。
                             sk.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-                            // 如果是开启新线程进行读操作时，则必须强迫选择器立即返回，因为已经读取结束。否则会一直阻塞
+                            // 唤醒 selector。如果是开启新线程进行读操作时，则必须强迫选择器立即返回，因为已经读取结束。否则会一直阻塞
                             selector.wakeup();
                             break;
                         }

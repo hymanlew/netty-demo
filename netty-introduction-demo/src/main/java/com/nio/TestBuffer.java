@@ -183,5 +183,13 @@ public class TestBuffer {
         // 返回此缓冲区的底层实现数组中第一个缓冲区元素的偏移量
         System.out.println(buffer.arrayOffset());
 
+        /**
+         * ByteBuffer 支持类型化的 put 和 get, put 放入的是什么数据类型，get就应该使用相应的数据类型来取出，否则可能有 BufferUnderflowException 异常。
+         *
+         * 以上的读写操作，都是通过一个Buffer 完成的，NIO 还支持通过多个Buffer (即 Buffer 数组) 完成读写操作，即 Scattering 和 Gathering。
+         */
+
+        // 可以将一个普通 Buffer 转成只读 Buffer。不可以放入数据
+        buffer = buffer.asReadOnlyBuffer();
     }
 }

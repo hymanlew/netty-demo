@@ -176,11 +176,21 @@ public class TestChannel {
         FileChannel inChannel = FileChannel.open(Paths.get("d:/1.txt"), StandardOpenOption.READ);
         FileChannel outChannel = FileChannel.open(Paths.get("d:/2.txt"), StandardOpenOption.WRITE, StandardOpenOption.READ, StandardOpenOption.CREATE);
 
-        // 内存映射文件，存储到物理内存中，并指定映射方式。并且只支持 ByteBuffer
+        /**
+         * NIO 提供了 MappedByteBuffer，可以让文件直接在系统内存（即堆外的内存）中进行修改，而如何同步到文件中则由 NIO 来完成。
+         * 这就不需要操作系统进行 IO 拷贝等操作。
+         *
+         * 它表示内存映射文件，存储到物理内存中，并指定映射方式。并且只支持 ByteBuffer。实际类型是 DirectByteBuffer。
+         *
+         * map() 方法参数说明：
+         * 第一个是文件操作的类型，第二个是可以修改的起始位置，第三个是映射到内存的大小（单位是字节），即多少字节的文件数据被映
+         * 射到内存中。但它不是指字节数组的下标位置，可操作的位置是字节大小 - 1。
+         */
         MappedByteBuffer inMappedBuf = inChannel.map(FileChannel.MapMode.READ_ONLY, 0, inChannel.size());
         MappedByteBuffer outMappedBuf = outChannel.map(FileChannel.MapMode.READ_WRITE, 0, inChannel.size());
 
         // 直接对缓冲区进行数据的读写操作，直接操作缓冲区就会直接操作物理内存中的数据
+        // 默认 limit 大小就等于此时 MappedByteBuffer 的大小
         byte[] dst = new byte[inMappedBuf.limit()];
         inMappedBuf.get(dst);
         outMappedBuf.put(dst);

@@ -147,7 +147,10 @@ public class ReactorInstru {
 
             // 第二步，注册 Read 就绪事件
             sk.interestOps(SelectionKey.OP_READ);
+
+            // 唤醒 selector
             selector.wakeup();
+
         }
 
         boolean inputIsComplete() {
