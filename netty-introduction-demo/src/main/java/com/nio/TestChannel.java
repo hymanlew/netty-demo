@@ -13,6 +13,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
@@ -112,18 +113,23 @@ public class TestChannel {
 
         //3. 分散读取
         ByteBuffer[] bufs = {buf1, buf2};
-        channel1.read(bufs);
 
-        for (ByteBuffer byteBuffer : bufs) {
-            byteBuffer.flip();
+        long read = 0;
+        while ((read = channel1.read(bufs)) != -1){
+
+            for (ByteBuffer byteBuffer : bufs) {
+                byteBuffer.flip();
+            }
+            System.out.println(new String(bufs[0].array(), 0, bufs[0].limit()));
+            System.out.println(new String(bufs[1].array(), 0, bufs[1].limit()));
+
+            //4. 聚集写入
+            RandomAccessFile raf2 = new RandomAccessFile("2.txt", "rw");
+            FileChannel channel2 = raf2.getChannel();
+            channel2.write(bufs);
+
+            Arrays.asList(bufs).stream().forEach(buf -> buf.clear());
         }
-        System.out.println(new String(bufs[0].array(), 0, bufs[0].limit()));
-        System.out.println(new String(bufs[1].array(), 0, bufs[1].limit()));
-
-        //4. 聚集写入
-        RandomAccessFile raf2 = new RandomAccessFile("2.txt", "rw");
-        FileChannel channel2 = raf2.getChannel();
-        channel2.write(bufs);
     }
 
     /**
