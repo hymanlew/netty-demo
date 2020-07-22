@@ -54,7 +54,7 @@ public class ServerNIO {
         for(;;) {
 
             // select() 会一直阻塞，监控所有注册的通道，直到有一个事件已经准备好为止。也可以指定等待的时间，毫秒数。
-            // 该方法将 selector 对应的 SelectionKey 加入到内部集合中并返回。
+            // 该方法将 selector 对应的 SelectionKey（实时循环监听到的）加入到内部集合中并返回。
             selector.select();
 
             // 不阻塞，立马返还
@@ -99,6 +99,8 @@ public class ServerNIO {
 
                         // 如果数据已经全部读完了，即只有是空通道时（-1），或者对端 socket/outputstream 关闭时（-1），才算是结束
                         if(len == -1){
+
+                            // 取消通道注册，关闭通道
                             sk.cancel();
                             sChannel.close();
                             break;
@@ -106,6 +108,7 @@ public class ServerNIO {
 
                         // 当当前通道中的数据读取结束之后
                         if(len == 0){
+
                             // 更改选择键的监听事件，增加读，写两个事件，使用通道符 | 连接。
                             sk.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
                             // 唤醒 selector。如果是开启新线程进行读操作时，则必须强迫选择器立即返回，因为已经读取结束。否则会一直阻塞
@@ -139,6 +142,8 @@ public class ServerNIO {
 
                         // 如果数据已经全部写完了，即只有是空通道时（-1），或者对端 socket/inputstream 关闭时（-1），才算是结束
                         if(len == -1){
+
+                            // 取消通道注册，关闭通道
                             sk.cancel();
                             sChannel.close();
                             break;
@@ -154,7 +159,7 @@ public class ServerNIO {
                     } while (len > 0);
                 }
 
-                // 取消选择键 SelectionKey，否则会一直被循环使用
+                // 删除选择键 SelectionKey，否则会一直被循环使用。注意它只是删除了通道上的某个监听事件，而不是删除通道
                 it.remove();
             }
 
