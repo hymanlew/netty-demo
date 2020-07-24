@@ -16,7 +16,9 @@ import java.nio.file.attribute.DosFileAttributeView;
 
 public class TestNIOFiles {
 
-	// 自动资源管理：自动关闭实现 AutoCloseable 接口的资源
+	/**
+	 * 自动资源管理：自动关闭实现 AutoCloseable 接口的资源
+ 	 */
 	public void test8(){
 		try(FileChannel inChannel = FileChannel.open(Paths.get("1.jpg"), StandardOpenOption.READ);
 				FileChannel outChannel = FileChannel.open(Paths.get("2.jpg"), StandardOpenOption.WRITE, StandardOpenOption.CREATE)){
@@ -29,7 +31,7 @@ public class TestNIOFiles {
 		}
 	}
 	
-	/*
+	/**
 		Files常用方法：用于操作内容
 			SeekableByteChannel newByteChannel(Path path, OpenOption…how) : 获取与指定文件的连接，how 指定打开方式。
 			DirectoryStream newDirectoryStream(Path path) : 打开 path 指定的目录
@@ -46,7 +48,7 @@ public class TestNIOFiles {
 		}
 	}
 	
-	/*
+	/**
 		Files常用方法：用于判断
 			boolean exists(Path path, LinkOption … opts) : 判断文件是否存在
 			boolean isDirectory(Path path, LinkOption … opts) : 判断是否是目录
@@ -86,7 +88,7 @@ public class TestNIOFiles {
 		fileAttributeView.setHidden(false);
 	}
 	
-	/*
+	/**
 		Files常用方法：
 			Path copy(Path src, Path dest, CopyOption … how) : 文件的复制
 			Path createDirectory(Path path, FileAttribute<?> … attr) : 创建一个目录
@@ -121,7 +123,7 @@ public class TestNIOFiles {
 		Files.copy(path1, path2, StandardCopyOption.REPLACE_EXISTING);
 	}
 	
-	/*
+	/**
 		Paths 提供的 get() 方法用来获取 Path 对象：
 			Path get(String first, String … more) : 用于将多个字符串串连成路径。
 
