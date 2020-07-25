@@ -1,11 +1,6 @@
 # netty-serialization-demo
 
-¶ÔÏóĞòÁĞ»¯, Ä¿µÄÊÇÎªÁËÊµÏÖ¶ÔÏóµÄÍøÂç´«ÊäºÍ±¾µØ³Ö¾Ã»¯  
-Èç¹ûÊ¹ÓÃjavaµÄĞòÁĞ»¯, ÂëÁ÷½Ï´ó. Òò´Ë¶àÓÃFastjsonSerialize, KryoSerialize,FSTSerializeµÈ  
-ÔÚ±¾ÀıÖĞÊ¹ÓÃFSTSerialize½øĞĞ±à½âÂë´«Êäjavabean  
-
-
-
-
-
+å¯¹è±¡åºåˆ—åŒ–, ç›®çš„æ˜¯ä¸ºäº†å®ç°å¯¹è±¡çš„ç½‘ç»œä¼ è¾“å’Œæœ¬åœ°æŒä¹…åŒ–  
+å¦‚æœä½¿ç”¨javaçš„åºåˆ—åŒ–, ç æµè¾ƒå¤§. å› æ­¤å¤šç”¨FastjsonSerialize, KryoSerialize,FSTSerializeç­‰  
+åœ¨æœ¬ä¾‹ä¸­ä½¿ç”¨FSTSerializeè¿›è¡Œç¼–è§£ç ä¼ è¾“javabean  
 
