@@ -15,10 +15,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
 
 /**
- * 连接服务器。通过host和port
- *
- * @author chenhx
- * @version EchoClient.java, v 0.1 2018-07-19 上午 9:58
+ * 通过 host 和 port 连接服务器
  */
 public class EchoClient {
 
@@ -38,29 +35,43 @@ public class EchoClient {
     }
 
     public void start() throws Exception {
+
+        // 客户端需要一个事件循环组
         EventLoopGroup group = new NioEventLoopGroup();
+
         try {
-            Bootstrap b = new Bootstrap();
-            //指定 EventLoopGroup 来处理客户端事件。由于我们使用 NIO 传输，所以用到了 NioEventLoopGroup 的实现
-            b.group(group)
+            // 创建客户端启动对象
+            Bootstrap bootstrap = new Bootstrap();
+
+            // 指定 EventLoopGroup 来处理客户端事件。由于我们使用 NIO 传输，所以用到了 NioEventLoopGroup 的实现
+            bootstrap.group(group)
+
+                    // 设置客户端通道的实现类(反射)
                     .channel(NioSocketChannel.class)
+
                     //设置服务器的地址和端口
                     .remoteAddress(new InetSocketAddress(host, port))
-                    //当建立一个连接和一个新的通道时，创建添加到 EchoClientHandler 实例 到 channel pipeline
+
+                    // 当建立一个连接和一个新的通道时，创建添加 EchoClientHandler 实例到 channel pipeline
                     .handler(new ChannelInitializer<SocketChannel>() {
+
                         @Override
-                        public void initChannel(SocketChannel ch)
-                                throws Exception {
-                            ch.pipeline().addLast(
-                                    new EchoClientHandler());
+                        public void initChannel(SocketChannel ch) throws Exception {
+                            // 加入自己的处理器
+                            ch.pipeline().addLast(new EchoClientHandler());
                         }
                     });
 
-            //连接到远程;等待连接完成 也可以在这里设置服务器地址和端口
-            ChannelFuture f = b.connect().sync();
-            //阻塞直到 Channel 关闭
-            f.channel().closeFuture().sync();
+            System.out.println("客户端 ok..");
+
+            // 启动客户端连接服务器，等待连接完成。也可以在这里设置服务器地址和端口
+            ChannelFuture future = bootstrap.connect().sync();
+
+            // 阻塞直到 Channel 关闭，监听通道关闭
+            future.channel().closeFuture().sync();
+
         } finally {
+
             //调用 shutdownGracefully() 来关闭线程池和释放所有资源
             group.shutdownGracefully().sync();
         }
