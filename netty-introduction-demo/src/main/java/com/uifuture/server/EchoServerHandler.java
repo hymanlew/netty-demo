@@ -31,7 +31,7 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
-        // 比如这里有一个非常耗时的业务 -> 异步执行 -> 提交给该 channel 对应的 NIOEventLoop 的 taskQueue 中
+        // 比如这里有一个非常耗时的业务 -> 异步执行 -> 提交给该 channel 对应的 NIOEventLoop 的 taskQueue 任务队列中，防止 pipeline 阻塞
         // 解决方案 1，用户程序自定义的普通任务
         ctx.channel().eventLoop().execute(new Runnable() {
 
@@ -48,6 +48,7 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
             }
         });
 
+        // 这个任务的执行时机，是本任务 sleep 加上一个任务 sleep 的时间之后。因为它们两个是由同一个线程处理的，是放到了同一个队列中
         ctx.channel().eventLoop().execute(new Runnable() {
 
             @Override
@@ -63,7 +64,7 @@ public class EchoServerHandler extends ChannelInboundHandlerAdapter {
             }
         });
 
-        //解决方案2，用户自定义定时任务，该任务是提交到 scheduleTaskQueue 中
+        //解决方案2，用户自定义定时任务，该任务是提交到 scheduleTaskQueue 中。并且也是会先执行之前的任务，因为它们是处于同一线程中
         ctx.channel().eventLoop().schedule(new Runnable() {
 
             @Override

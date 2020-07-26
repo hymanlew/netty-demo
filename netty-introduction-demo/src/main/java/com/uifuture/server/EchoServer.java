@@ -98,7 +98,7 @@ public class EchoServer {
                         @Override
                         public void initChannel(SocketChannel ch) {
 
-                            //可以使用一个集合管理 SocketChannel，在推送消息时，将业务加入到各个channel 对应的 NIOEventLoop 的 taskQueue 或者 scheduleTaskQueue
+                            //可以使用一个集合来统一管理 SocketChannel，在推送消息时，将业务加入到各个channel 对应的 NIOEventLoop 的 taskQueue 或者 scheduleTaskQueue 中即可
                             System.out.println("客户 socketchannel hashcode=" + ch.hashCode());
 
                             // ChannelPipeline 用于存放管理 ChannelHandel，ChannelHandler 用于处理请求响应的业务逻辑相关代码
