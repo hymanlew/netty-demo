@@ -5,14 +5,11 @@
 package com.uifuture.server;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.util.NettyRuntime;
+import io.netty.handler.codec.http.HttpServerCodec;
 
 import java.net.InetSocketAddress;
 
@@ -39,8 +36,8 @@ import java.net.InetSocketAddress;
  * 处理。处理任务队列的任务，即 runAllTasks。
  *
  * 每个 Worker NioEventLoop  处理业务时，会使用 pipeline（管道），pipeline 中包含了 channel，即通过 pipeline 可以获取到对应通道，
- * 另外管道中维护了很多的处理器。这些处理器在每个 NioEventLoop 内部采用串行化设计，从消息的读取->解码->处理->编码->发送，始终由 IO
- * 线程 NioEventLoop 负责。
+ * 另外管道中维护了很多的处理器。这些处理器在每个 NioEventLoop 内部采用串行化设计，从消息的读取 -> 解码 -> 处理 -> 编码 -> 发送，始
+ * 终由 IO 线程 NioEventLoop 负责。
  *
  *
  * 配置服务器的启动代码。最少需要设置服务器绑定的端口，用来监听连接请求。
@@ -98,12 +95,20 @@ public class EchoServer {
                         @Override
                         public void initChannel(SocketChannel ch) {
 
-                            //可以使用一个集合来统一管理 SocketChannel，在推送消息时，将业务加入到各个channel 对应的 NIOEventLoop 的 taskQueue 或者 scheduleTaskQueue 中即可
+                            // 可以使用一个集合来统一管理 SocketChannel，在推送消息时，将业务加入到各个channel 对应的 NIOEventLoop 的 taskQueue 或者 scheduleTaskQueue 中即可
                             System.out.println("客户 socketchannel hashcode=" + ch.hashCode());
 
-                            // ChannelPipeline 用于存放管理 ChannelHandel，ChannelHandler 用于处理请求响应的业务逻辑相关代码
-                            // 配置通信数据的处理逻辑, 可以 addLast 多个
-                            ch.pipeline().addLast(new EchoServerHandler());
+                            // 得到管道
+                            ChannelPipeline pipeline = ch.pipeline();
+
+                            // ChannelPipeline 用于存放管理 ChannelHandler，ChannelHandler 用于处理请求响应的业务逻辑相关代码
+                            // 配置通信数据的处理逻辑，可以 addLast 多个
+                            pipeline.addLast(new EchoServerHandler());
+
+                            // 也可以加入一个 netty 提供的 httpServerCodec，即处理 http 的编解码器（codec = coder + decoder）
+                            pipeline.addLast("MyHttpServerCodec",new HttpServerCodec());
+                            // 增加一个自定义的 Httphandler，用于接收浏览器发送的 HTTP 请求
+                            pipeline.addLast("MyHttpServerHandler", new HttpServerHandler());
                         }
                     })
 
