@@ -60,9 +60,34 @@ public class EchoServer {
     public void start() throws Exception {
 
         /**
-         * Netty 内部都是通过线程在处理各种数据，EventLoopGroup 就是用来管理调度他们的，注册Channel，管理他们的生命周期。
-         * NioEventLoopGroup 是一个处理I/O操作的多线程事件循环。
-         * 创建两个线程组 bossGroup 和 workerGroup，两个都是无限循环。
+         * Bootstrap 意思是引导，一个 Netty 应用通常由一个 Bootstrap 开始，主要作用是配置整个 Netty 程序，串联各个组件。Netty 中
+         * Bootstrap 类是客户端程序的启动引导类，ServerBootstrap 是服务端启动引导类，也可以直接使用 Channel去建立服务端，但是大多
+         * 数情况下无需这样做。
+         *
+         * EventLoopGroup 和其实现类 NioEventLoopGroup：
+         * EventLoopGroup 是一组 EventLoop 的抽象，Netty 为了更好的利用多核 CPU 资源，一般会有多个 EventLoop 同时工作。NioEventLoop
+         * 实际上就是工作线程，NioEventLoopGroup 是一个处理 I/O操作的多线程事件循环的线程池，线程池中的线程就是 NioEventLoop。该
+         * 线程池可用于接收传入连接（且仅接收客户端连接，不做复杂的逻辑处理，为了尽可能减少资源的占用，所以取值越小越好）。EventLoopGroup
+         * 提供 next 接口，可以从组里面按照一定规则获取其中一个 EventLoop来处理任务。在 Netty 服务器端编程中，一般都需要提供两个
+         * EventLoopGroup：BossEventLoopGroup 和 WorkerEventLoopGroup。
+         *
+         * 其内部的每个 NioEventLoop绑定一个端口，即如果程序只需要监听1个端口的话，它里面只需要有一个 NioEventLoop 线程就行。通常
+         * 一个服务端口即一个 ServerSocketChannel 对应一个 Selector 和一个EventLoop线程。可命名为 bossGroup。NioEventLoopGroup
+         * 可命名为 workerGroup，用于处理 boss接收到的连接的流量，并将接收的连接注册进这个 worker。BossEventLoop 负责接收客户端的
+         * 连接，不断轮询 Selector 将连接事件分离出来，并将 SocketChannel 交给 WorkerEventLoopGroup 来进行 IO 处理。WorkerEventLoopGroup
+         * 会由 next 选择其中一个 EventLoop来将这个 SocketChannel 注册到其维护的 Selector 并对其后续的 IO 事件进行处理。
+         *
+         * Netty 内部都是通过线程在处理各种数据，EventLoopGroup就是用来管理调度他们的，注册Channel，管理他们的生命周期。每个 NioEventLoop
+         * 都绑定了一个 Selector，所以在Netty的线程模型中，是由多个 Selecotr 在监听IO就绪事件。而 Channel 注册到 Selector，一个 Channel
+         * 绑定一个 NioEventLoop，相当于一个连接绑定一个线程，这个连接所有的 ChannelHandler都是在一个线程中执行的，避免了多线程干扰。
+         * 更重要的是 ChannelPipline 链表必须严格按照顺序执行的。单线程的设计能够保证 ChannelHandler 的顺序执行。
+         * 一个 NioEventLoop 的 selector可以被多个 Channel注册，也就是说多个 Channel 共享一个 EventLoop。EventLoop的 Selecctor 对
+         * 这些 Channel 进行检查，在监听一个端口的情况下，一个 NioEventLoop 通过一个 NioServerSocketChannel 监听端口，处理TCP连接。
+         * 后端多个工作线程 NioEventLoop 处理 IO 事件。每个 Channel 绑定一个NioEventLoop线程，一个NioEventLoop线程关联一个 selector
+         * 来为多个注册到它的 Channel 监听IO就绪事件。NioEventLoop 是单线程执行，保证 Channel的pipline 在单线程中执行，保证了 ChannelHandler
+         * 的执行顺序。
+         *
+         * NioEventLoopGroup 是一个处理I/O操作的多线程事件循环。创建的两个线程组 bossGroup 和 workerGroup，两个都是无限循环。
          * bossGroup 和 workerGroup 含有的子线程（NioEventLoop）的个数，默认是实际 cpu 核数 NettyRuntime.availableProcessors() * 2
          */
 
@@ -79,7 +104,7 @@ public class EchoServer {
             // 使用链式编程来进行设置
             b.group(bossGroup, workerGroup)
 
-                    // 指定使用 NioServerSocketChannel 产生一个Channel用来接收连接。NioServerSocketChannel 对应 TCP, NioDatagramChannel 对应 UDP
+                    // 该方法用来设置一个服务器端的通道实现，产生一个Channel用来接收连接。NioServerSocketChannel 对应 TCP, NioDatagramChannel 对应 UDP
                     .channel(NioServerSocketChannel.class)
 
                     //设置 socket 地址使用所选的端口
@@ -89,7 +114,7 @@ public class EchoServer {
                     //.handler(null)
 
                     // 创建一个通道初始化对象(匿名对象)，ChannelInitializer 配置一个新的 SocketChannel，用于向你的 Channel 中添加 ChannelInboundHandler 的实现
-                    // 给 workerGroup 的 EventLoop 对应的 pipeline 管道设置处理器
+                    // 该方法用于设置业务处理类（自定义的 handler），即给 workerGroup 的 EventLoop 对应的 pipeline 管道设置处理器
                     .childHandler(new ChannelInitializer<SocketChannel>() {
 
                         @Override
@@ -98,7 +123,36 @@ public class EchoServer {
                             // 可以使用一个集合来统一管理 SocketChannel，在推送消息时，将业务加入到各个channel 对应的 NIOEventLoop 的 taskQueue 或者 scheduleTaskQueue 中即可
                             System.out.println("客户 socketchannel hashcode=" + ch.hashCode());
 
-                            // 得到管道
+                            /**
+                             * Netty 中通过 ChannelPipeline 来保证 ChannelHandler 之间的处理顺序。每一个 Channel 对象创建的时候，都会自动创
+                             * 建一个关联的 ChannelPipeline对象（通过 pipeline() 方法获取这个对象实例）。因为 ChannelPipleLine 的创建是定义
+                             * 在AbstractChannel的构造方法中的，而每个 Channel只会被创建一次，只会调用一次构造方法，因此每个 Channel 实例只
+                             * 对应唯一一个 ChannelPipleLine 实例。其具体创建过程实际上是通过 return new DefaultChannelPipeline(this); 实现的。
+                             * DefaultChannelPipeline 是 ChannelPipeline的默认实现类。
+                             * DefaultChannelPipeline 内部是通过一个双向链表记录 ChannelHandler的先后关系，而双向链表的节点是 AbstractChannelHandlerContext 类。
+                             * DefaultChannelPipeline 内部通过两个哨兵节点 HeadContext 和 TailContext 作为链表的开始和结束，设置哨兵可以在
+                             * 移除节点的时候，不需要判断是否是最后一个节点。
+                             *
+                             * 1、默认情况下，一个ChannelPipeline实例中，同一类型 ChannelHandler只能被添加一次，如果添加多次，则会抛出异常。
+                             * 如果需要多次添加同一类型的 ChannelHandler的话，则需要在该 ChannelHandler实现类上添加 @Sharable注解。
+                             *
+                             * 2、在 ChannelPipeline中，每一个 ChannelHandler都有一个名字，而且名字必须是唯一的，如果名字重复了，则会抛出异常。
+                             * 如果添加 ChannelHanler的时候没有显示的指定名字，则会按照规则其起一个默认的名字。
+                             *
+                             * 3、ChannelHanler 默认命名规则如下，如果 ChannelPipeline 中某种类型的 handler 实例只有一个，如XHandler，YHandler，
+                             * 则其名字分别为 XHandler#0，YHandler#0。如果同一类型的 Handler有多个实例，则每次之后的编号加1。
+                             *
+                             * ChannelPipeline 是一个 Handler 的集合，它负责处理和拦截 inbound 或者 outbound 的事件和操作，相当于
+                             * 一个贯穿 Netty 的链。也可以理解为 ChannelPipeline 是保存 ChannelHandler 的 List，用于处理或拦截 Channel 的入
+                             * 站事件和出站操作。它实现了一种高级形式的拦截过滤器模式，使用户可以完全控制事件的处理方式，以及 Channel 中各个的
+                             * ChannelHandler 如何相互交互。在 Netty 中每个 Channel 都有且仅有一个 ChannelPipeline 与之对应，它们的组成关系
+                             * 为：一个 Channel 包含了一个 ChannelPipeline，而 ChannelPipeline 中又维护了一个由 ChannelHandlerContext 组成
+                             * 的双向链表，并且每个 ChannelHandlerContext 中又关联着一个 ChannelHandler。入站事件和出站事件在一个双向链表中，
+                             * 入站事件会从链表 head 往后传递到最后一个入站的 handler，出站事件会从链表 tail 往前传递到最前一个出站的 handler，
+                             * 两种类型的 handler 互不干扰。
+                             *
+                             * 得到管道
+                             */
                             ChannelPipeline pipeline = ch.pipeline();
 
                             // ChannelPipeline 用于存放管理 ChannelHandler，ChannelHandler 用于处理请求响应的业务逻辑相关代码
@@ -107,13 +161,13 @@ public class EchoServer {
 
                             // 也可以加入一个 netty 提供的 httpServerCodec，即处理 http 的编解码器（codec = coder + decoder）
                             pipeline.addLast("MyHttpServerCodec",new HttpServerCodec());
-                            // 增加一个自定义的 Httphandler，用于接收浏览器发送的 HTTP 请求
+                            // 增加一个自定义的 Httphandler 到链中的最后一个位置，用于接收浏览器发送的 HTTP 请求。
                             pipeline.addLast("MyHttpServerHandler", new HttpServerHandler());
                         }
                     })
 
                     /**
-                     * 设置线程队列接收传入连接，并容纳等待连接的个数，设置 TCP 缓冲区
+                     * 该方法用于给 ServerChannel 添加配置。设置线程队列接收传入连接，并容纳等待连接的个数，设置 TCP 缓冲区。
                      * BACKLOG 用于构造服务端套接字 ServerSocket 对象，标识当服务器请求处理线程全满时，用于临时存放已完成三次
                      * 握手的请求的队列的最大长度。如果未设置或所设置的值小于1，Java将使用默认值50。
                      */
@@ -122,7 +176,7 @@ public class EchoServer {
                     /**
                      * 设置保持连接状态。即是否启用心跳保活机制。在双方TCP套接字建立连接后（即都进入 ESTABLISHED 状态）并且在
                      * 两个小时左右，上层没有任何数据传输的情况下，这套机制才会被激活。
-                     * childOption 是用来给父级 ServerChannel 之下的 Channels 设置参数的
+                     * childOption 是用来给接收到的通道添加配置，即给父级 ServerChannel 之下的 Channels 设置参数
                      */
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
@@ -178,7 +232,7 @@ public class EchoServer {
              */
         } finally {
 
-            // 释放 channel 和 块，直到线程组被关闭
+            // 释放 channel 和 块，断开连接，关闭线程组
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
