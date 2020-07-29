@@ -167,23 +167,45 @@ public class EchoServer {
                     })
 
                     /**
-                     * 该方法用于给 ServerChannel 添加配置。设置线程队列接收传入连接，并容纳等待连接的个数，设置 TCP 缓冲区。
-                     * BACKLOG 用于构造服务端套接字 ServerSocket 对象，标识当服务器请求处理线程全满时，用于临时存放已完成三次
-                     * 握手的请求的队列的最大长度。如果未设置或所设置的值小于1，Java将使用默认值50。
+                     * 该方法用于给 ServerChannel 添加配置参数，Netty 在创建 Channel 实例后，一般都需要设置 ChannelOption 参数。
+                     *
+                     * SO_BACKLOG：
+                     * 当服务器请求处理线程全满时，用来接收已完成三次握手的请求的队列的最大长度。即 TCP缓冲区。它对应了 TCP/IP 协议 listen 函
+                     * 数中的 backlog 参数，用来初始化服务器可连接队列的大小。
+                     * 服务端处理客户端连接请求是顺序处理的，所以同一时间只能处理一个客户端连接。多个客户端来的时候，服务端将不能处理的客户端连
+                     * 接请求放在队列中等待处理，backlog 参数指定了队列的大小。
+                     *
+                     * 服务器的 TCP 内核维护两个队列 A 和 B：
+                     * 客户端向服务端请求 connect 时，发送SYN（第一次握手），服务端收到 SYN 后，向客户端发送 SYN ACK（第二次握手），TCP内核将
+                     * 连接放入队列 A。客户端收到后向服务端发送 ACK（第三次握手），TCP内核将连接从 A 转到 B，accept 返回，连接完成。A/B 队列的
+                     * 长度和即为 BACKLOG，当 accept 速度跟不上时（也就是同时握手过多），A/B 队列使得 BACKLOG 满了，客户端连接就会被 TCP 内核
+                     * 拒绝。此时可以调大 SO_BACKLOG 来缓解这一现象，默认值为 50。如果未设置或所设置的值小于1，也是使用默认值。
                      */
                     .option(ChannelOption.SO_BACKLOG, 128)
 
                     /**
-                     * 设置保持连接状态。即是否启用心跳保活机制。在双方TCP套接字建立连接后（即都进入 ESTABLISHED 状态）并且在
-                     * 两个小时左右，上层没有任何数据传输的情况下，这套机制才会被激活。
-                     * childOption 是用来给接收到的通道添加配置，即给父级 ServerChannel 之下的 Channels 设置参数
+                     * SO_KEEPALIVE：
+                     * 设置保持连接状态。即是否启用心跳保活机制。在双方TCP套接字建立连接后（即都进入 ESTABLISHED 状态）并且在两个小时左右，上层
+                     * 没有任何数据传输的情况下，这套机制才会被激活。
+                     * childOption 是用来给接收到的通道添加配置，即给父级 ServerChannel 之下的 Channels 设置参数。
                      */
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
 
             System.out.println(".....服务器 is ready...");
 
-            // sync() 会同步等待连接操作结果，用户线程将在此 wait()，直到连接操作完成之后，线程被 notify(), 用户代码继续执行
-
+            /**
+             * Future、ChannelFuture 接口：
+             * Netty 中所有的 IO 操作都是异步的，因为一个操作可能不会立即返回，不能立刻得知消息是否被正确处理。但是可以过一会等它执行完成或者直
+             * 接注册一个监听，具体的实现就是通过 Future 和 ChannelFutures，他们可以注册一个监听，当操作执行成功或失败时监听会自动触发注册的监
+             * 听事件。使用其 addListener() 方法注册一个 ChannelFutureListener，以便在某个操作完成时（无论是否成功）得到通知。ChannelFuture
+             * 表示 Channel 中异步I/O操作的结果状态。
+             * 此外不建议在 ChannelHandler 中调用 await()，因为 ChannelHandler 中事件驱动的方法是被一个 I/O 线程调用，可能一直不会完成，那么
+             * await() 也可能被I/O线程调用，同样会一直 block，因此会产生死锁。所以要使用 addListener(new ChannelFutureListener() {}) 的方法。
+             *
+             * Channel channel()，返回当前正在进行 IO 操作的通道。
+             * ChannelFuture sync()，等待异步操作执行完毕，用户线程将在此 wait()，直到操作完成后，线程被 notify()，用户代码才继续执行。
+             * closeFuture()，当 Channel 关闭时返回一个 ChannelFuture，用于链路检测。
+             */
             // 启动服务器（也可以在该处再绑定端口）：sync 会阻塞等待服务器启动，bind 返回 future(异步的)，但加上 sync 会同步阻塞
             ChannelFuture future = b.bind().sync();
             System.out.println(EchoServer.class.getName() + " started and listen on " + future.channel().localAddress());
