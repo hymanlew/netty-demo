@@ -10,6 +10,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 
 import java.net.InetSocketAddress;
 
@@ -155,14 +157,18 @@ public class EchoServer {
                              */
                             ChannelPipeline pipeline = ch.pipeline();
 
+                            // 也可以加入一个 netty 提供的 httpServerCodec，即处理 http 的编解码器（codec = coder + decoder）
+                            pipeline.addLast("MyHttpServerCodec", new HttpServerCodec());
+                            // 增加一个自定义的 Httphandler 到链中的最后一个位置，用于接收浏览器发送的 HTTP 请求。
+                            pipeline.addLast("MyHttpServerHandler", new HttpServerHandler());
+
                             // ChannelPipeline 用于存放管理 ChannelHandler，ChannelHandler 用于处理请求响应的业务逻辑相关代码
                             // 配置通信数据的处理逻辑，可以 addLast 多个
                             pipeline.addLast(new EchoServerHandler());
 
-                            // 也可以加入一个 netty 提供的 httpServerCodec，即处理 http 的编解码器（codec = coder + decoder）
-                            pipeline.addLast("MyHttpServerCodec",new HttpServerCodec());
-                            // 增加一个自定义的 Httphandler 到链中的最后一个位置，用于接收浏览器发送的 HTTP 请求。
-                            pipeline.addLast("MyHttpServerHandler", new HttpServerHandler());
+                            pipeline.addLast("MyStringDecoder", new StringDecoder());
+                            pipeline.addLast("MyStringEncoder", new StringEncoder());
+                            pipeline.addLast(new StringServerHandler());
                         }
                     })
 
@@ -191,7 +197,7 @@ public class EchoServer {
                      * 就将该选项设置为true（即关闭 Nagle 算法）。如果要减少发送次数减少网络交互，就设置为 false 等累积一定大小后再发送。默认为
                      * false。
                      */
-                    .option(ChannelOption.TCP_NODELAY, false)
+                    .option(ChannelOption.TCP_NODELAY, true)
 
                     /**
                      * SO_KEEPALIVE：

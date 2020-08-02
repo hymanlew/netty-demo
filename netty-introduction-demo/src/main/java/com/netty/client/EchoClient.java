@@ -4,15 +4,17 @@
  */
 package com.netty.client;
 
+import com.netty.server.StringServerHandler;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 
 import java.net.InetSocketAddress;
+import java.util.Scanner;
 
 /**
  * Channel：
@@ -88,8 +90,14 @@ public class EchoClient {
 
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
+                            ChannelPipeline pipeline = ch.pipeline();
+
                             // 加入自己的处理器
-                            ch.pipeline().addLast(new EchoClientHandler());
+                            pipeline.addLast(new EchoClientHandler());
+
+                            pipeline.addLast("MyStringDecoder", new StringDecoder());
+                            pipeline.addLast("MyStringEncoder", new StringEncoder());
+                            pipeline.addLast(new StringClientHandler());
                         }
                     });
 
@@ -99,11 +107,21 @@ public class EchoClient {
             ChannelFuture future = bootstrap.connect().sync();
 
             // 阻塞直到 Channel 关闭，监听通道关闭
-            future.channel().closeFuture().sync();
+            //future.channel().closeFuture().sync();
+
+            Channel channel = future.channel();
+            System.out.println("客户端 -- " + channel.localAddress());
+
+            // 客户端需要输入信息，创建一个扫描器
+            Scanner scanner = new Scanner(System.in);
+            while (scanner.hasNextLine()) {
+                String msg = scanner.nextLine();
+                // 通过 channel 发送到服务器端
+                channel.writeAndFlush(msg + "\r\n");
+            }
 
         } finally {
-
-            //调用 shutdownGracefully() 来关闭线程池和释放所有资源
+            // 调用 shutdownGracefully() 来关闭线程池和释放所有资源
             group.shutdownGracefully().sync();
         }
     }
