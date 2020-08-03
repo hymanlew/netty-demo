@@ -14,10 +14,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * @author chenhx
- * @version ServerHandler.java, v 0.1 2018-08-08 下午 2:52
- */
 public class ServerHandler extends SimpleChannelInboundHandler {
     private static final String SUCCESS_KEY = "auth_success_key";
     private static HashMap<String, String> AUTH_IP_MAP = new HashMap<>();

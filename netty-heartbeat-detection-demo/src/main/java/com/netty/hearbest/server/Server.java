@@ -72,7 +72,7 @@ public class Server {
                             pipeline.addLast(new IdleStateHandler(3,5,10, TimeUnit.SECONDS));
 
                             // 加入一个对空闲检测后，进一步处理的 handler(自定义)
-                            pipeline.addLast(new ServerHandler());
+                            pipeline.addLast(new HeartServerHandler());
                         }
                     })
 
