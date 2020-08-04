@@ -1,6 +1,6 @@
-package com.netty.protocol;
+package com.netty.fst.protocol;
 
-import com.netty.codec.FstSerializer;
+import com.netty.fst.codec.FstSerializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;

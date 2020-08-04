@@ -2,7 +2,7 @@
  * netty.com
  * Copyright (C) 2013-2018 All Rights Reserved.
  */
-package com.netty.model;
+package com.netty.fst.model;
 
 import lombok.Data;
 
@@ -10,9 +10,6 @@ import java.io.Serializable;
 
 /**
  * 传输测试的实体类
- *
- * @author chenhx
- * @version User.java, v 0.1 2018-08-08 下午 3:14
  */
 @Data
 public class User implements Serializable {

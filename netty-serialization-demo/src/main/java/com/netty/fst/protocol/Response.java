@@ -1,4 +1,4 @@
-package com.netty.protocol;
+package com.netty.fst.protocol;
 
 import lombok.Data;
 

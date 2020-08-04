@@ -2,14 +2,10 @@
  * netty.com
  * Copyright (C) 2013-2018 All Rights Reserved.
  */
-package com.netty.codec;
+package com.netty.fst.codec;
 
 import org.nustaq.serialization.FSTConfiguration;
 
-/**
- * @author chenhx
- * @version FstSerializer.java, v 0.1 2018-08-08 下午 2:39
- */
 public class FstSerializer {
     private static FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
 

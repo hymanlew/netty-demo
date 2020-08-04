@@ -4,18 +4,14 @@
  */
 package com.netty.server;
 
-import com.netty.model.User;
-import com.netty.protocol.Request;
-import com.netty.protocol.Response;
+import com.netty.fst.model.User;
+import com.netty.fst.protocol.Request;
+import com.netty.fst.protocol.Response;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-/**
- * @author chenhx
- * @version ServerHandler.java, v 0.1 2018-08-08 下午 2:52
- */
-public class ServerHandler extends SimpleChannelInboundHandler<Request> {
+public class FstServerHandler extends SimpleChannelInboundHandler<Request> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Request request) throws Exception {
         System.out.println("服务端接收到的消息 : " + request);

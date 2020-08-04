@@ -4,16 +4,12 @@
  */
 package com.netty.client;
 
-import com.netty.model.User;
-import com.netty.protocol.Request;
-import com.netty.protocol.Response;
+import com.netty.fst.model.User;
+import com.netty.fst.protocol.Request;
+import com.netty.fst.protocol.Response;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-/**
- * @author chenhx
- * @version ClientHandler.java, v 0.1 2018-08-08 下午 3:07
- */
 public class ClientHandler extends SimpleChannelInboundHandler<Response> {
 
     /**
