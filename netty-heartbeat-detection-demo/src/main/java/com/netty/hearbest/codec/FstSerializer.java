@@ -6,10 +6,6 @@ package com.netty.hearbest.codec;
 
 import org.nustaq.serialization.FSTConfiguration;
 
-/**
- * @author chenhx
- * @version FstSerializer.java, v 0.1 2018-08-08 下午 2:39
- */
 public class FstSerializer {
     private static FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
 

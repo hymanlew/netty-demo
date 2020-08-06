@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+//加快解析
+option optimize_for = SPEED;
+
+//指定生成到哪个包下
+option java_package="com.netty.protobuf";
+
+//外部类名, 文件名
+option java_outer_classname="DataInfo";
+
+//protobuf 可以使用 message 管理其他的 message
+message DMessage {
+
+    //定义一个枚举类型，使用编号来代表某一种对象实例
+    enum DataType {
+
+        //在 proto3 要求enum的编号从0开始
+        MasterType = 0;
+        SlaveType = 1;
+    }
+
+    //用 data_type 来标识传的是哪一个枚举类型，它代表的是 DMessage 中的第一个参数
+    DataType data_type = 1;
+
+    //表示每次枚举类型最多只能出现其中的一个, 节省空间，它代表的是 DMessage 中的第二个参数
+    oneof dataBody {
+        DataMaster master = 2;
+        DataSlave slave = 3;
+    }
+}
+
+
+message DataMaster {
+    int32 id = 1;
+    string name = 2;
+}
+
+message DataSlave {
+    string name=1;
+    int32 age=2;
+}

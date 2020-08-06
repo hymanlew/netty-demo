@@ -8,6 +8,7 @@ import com.netty.fst.protocol.Request;
 import com.netty.fst.protocol.Response;
 import com.netty.fst.protocol.TinyDecoder;
 import com.netty.fst.protocol.TinyEncoder;
+import com.netty.protobuf.DataInfo;
 import com.netty.protobuf.StudentPOJO;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -62,7 +63,12 @@ public class Client {
                             ch.pipeline()
                                     .addLast("encoder", new ProtobufEncoder())
                                     .addLast("decoder", new ProtobufDecoder(StudentPOJO.Student.getDefaultInstance()))
-                                    .addLast(new ProtoClientHandler());
+                                    .addLast(new ProtoSClientHandler());
+
+                            ch.pipeline()
+                                    .addLast("encoder", new ProtobufEncoder())
+                                    .addLast("decoder", new ProtobufDecoder(DataInfo.DMessage.getDefaultInstance()))
+                                    .addLast(new ProtoDClientHandler());
                         }
                     });
 

@@ -4,11 +4,11 @@
  */
 package com.netty.server;
 
-import com.netty.client.ProtoClientHandler;
 import com.netty.fst.protocol.Request;
 import com.netty.fst.protocol.Response;
 import com.netty.fst.protocol.TinyDecoder;
 import com.netty.fst.protocol.TinyEncoder;
+import com.netty.protobuf.DataInfo;
 import com.netty.protobuf.StudentPOJO;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -59,7 +59,12 @@ public class Server {
                             ch.pipeline()
                                     .addLast("encoder", new ProtobufEncoder())
                                     .addLast("decoder", new ProtobufDecoder(StudentPOJO.Student.getDefaultInstance()))
-                                    .addLast(new ProtoServerHandler());
+                                    .addLast(new ProtoSServerHandler());
+
+                            ch.pipeline()
+                                    .addLast("encoder", new ProtobufEncoder())
+                                    .addLast("decoder", new ProtobufDecoder(DataInfo.DMessage.getDefaultInstance()))
+                                    .addLast(new ProtoDServerHandler());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
