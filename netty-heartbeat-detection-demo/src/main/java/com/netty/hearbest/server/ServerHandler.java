@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ServerHandler extends SimpleChannelInboundHandler {
+
     private static final String SUCCESS_KEY = "auth_success_key";
     private static HashMap<String, String> AUTH_IP_MAP = new HashMap<>();
     private static Set<String> AUTH_IP_SET = new HashSet<>();
@@ -32,6 +33,7 @@ public class ServerHandler extends SimpleChannelInboundHandler {
      * @return
      */
     private boolean auth(ChannelHandlerContext ctx, Object msg) {
+
         String[] ret = ((String) msg).split(",");
         String auth = AUTH_IP_MAP.get(ret[0]);
         if (!StringUtil.isNullOrEmpty(auth) && auth.equals(ret[1])) {
@@ -48,6 +50,7 @@ public class ServerHandler extends SimpleChannelInboundHandler {
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Object msg) throws Exception {
+
         if (msg instanceof String) {
             auth(ctx, msg);
         } else if (msg instanceof RequestInfo) {
@@ -74,6 +77,7 @@ public class ServerHandler extends SimpleChannelInboundHandler {
             System.out.println("--------------------------------------------");
 
             ctx.writeAndFlush("success");
+
         } else {
             ctx.writeAndFlush("error").addListener(ChannelFutureListener.CLOSE);
         }

@@ -7,6 +7,7 @@ package com.netty.fst.codec;
 import org.nustaq.serialization.FSTConfiguration;
 
 public class FstSerializer {
+
     private static FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
 
     /**

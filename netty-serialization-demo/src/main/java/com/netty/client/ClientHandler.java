@@ -31,14 +31,17 @@ public class ClientHandler extends SimpleChannelInboundHandler<Response> {
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
+
         Request request = new Request();
-        request.setRequestId(3L);
+        request.setRequestId(1L);
+
         User user = new User();
         user.setUsername("测试客户端");
-        user.setPassword("4567");
+        user.setPassword("45678");
         user.setAge(21);
         request.setParameters(user);
-        //当被通知该 channel 是活动的时候就发送信息
+
+        // 当被通知该 channel 是活动的时候就发送信息
         ctx.writeAndFlush(request);
     }
 
@@ -54,8 +57,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<Response> {
      * @param cause
      */
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx,
-                                Throwable cause) {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         //记录错误日志并关闭 channel
         cause.printStackTrace();
         ctx.close();

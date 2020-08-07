@@ -10,6 +10,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
  */
 @ChannelHandler.Sharable
 public class TinyEncoder extends MessageToByteEncoder {
+
     private Class<?> genericClass;
 
     public TinyEncoder(Class<?> genericClass) {

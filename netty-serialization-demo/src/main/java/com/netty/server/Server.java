@@ -57,13 +57,13 @@ public class Server {
 
                             // 在 pipeline 中加入 ProtoBufEncoder
                             ch.pipeline()
-                                    .addLast("encoder", new ProtobufEncoder())
                                     .addLast("decoder", new ProtobufDecoder(StudentPOJO.Student.getDefaultInstance()))
+                                    .addLast("encoder", new ProtobufEncoder())
                                     .addLast(new ProtoSServerHandler());
 
                             ch.pipeline()
-                                    .addLast("encoder", new ProtobufEncoder())
                                     .addLast("decoder", new ProtobufDecoder(DataInfo.DMessage.getDefaultInstance()))
+                                    .addLast("encoder", new ProtobufEncoder())
                                     .addLast(new ProtoDServerHandler());
                         }
                     })

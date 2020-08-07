@@ -17,10 +17,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.net.InetSocketAddress;
 
-/**
- * @author chenhx
- * @version Client.java, v 0.1 2018-08-10 上午 9:57
- */
 public class Client {
     private final String host;
     private final int port;

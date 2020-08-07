@@ -9,6 +9,7 @@ import java.io.Serializable;
  */
 @Data
 public class Response implements Serializable {
+
     private static final long serialVersionUID = -3136380221020337915L;
     private Long requestId;
     private String error;
