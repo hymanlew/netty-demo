@@ -19,10 +19,6 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
 import java.net.InetSocketAddress;
 
-/**
- * @author chenhx
- * @version Client.java, v 0.1 2018-08-08 下午 3:07
- */
 public class Client {
     private final String host;
     private final int port;
@@ -40,6 +36,7 @@ public class Client {
     }
 
     public void start() throws Exception {
+
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap b = new Bootstrap();
@@ -48,8 +45,8 @@ public class Client {
                     .remoteAddress(new InetSocketAddress(host, port))
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
-                        public void initChannel(SocketChannel ch)
-                                throws Exception {
+                        public void initChannel(SocketChannel ch) throws Exception {
+
                             ch.pipeline()
                                     .addLast(new TinyEncoder(Request.class))
                                     .addLast(new LengthFieldBasedFrameDecoder(1024 * 1024, 0, 4, 0, 0))

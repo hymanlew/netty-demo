@@ -11,6 +11,7 @@ import io.netty.handler.codec.MessageToByteEncoder;
  */
 @ChannelHandler.Sharable
 public class TinyEncoder extends MessageToByteEncoder {
+
     private Class<?> genericClass;
 
     public TinyEncoder(Class<?> genericClass) {
@@ -27,6 +28,7 @@ public class TinyEncoder extends MessageToByteEncoder {
      */
     @Override
     public void encode(ChannelHandlerContext ctx, Object in, ByteBuf out) {
+
         //判断解码类型
         if (genericClass.isInstance(in)) {
             //序列化
